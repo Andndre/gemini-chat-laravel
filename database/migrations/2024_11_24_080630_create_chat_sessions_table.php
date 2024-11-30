@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamps();
             $table->string('name');
             // relation to the template_chats table
-            $table->foreignId('template_chat_id')->constrained()->onDelete('cascade');
+            $table->foreignId('template_chat_id')->constrained('template_chats')->onDelete('cascade');
         });
     }
 

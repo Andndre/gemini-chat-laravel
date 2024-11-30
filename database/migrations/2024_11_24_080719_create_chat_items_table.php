@@ -17,11 +17,11 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             // gemini or user
-            $table->string('type');
+            $table->string('role');
             // the message
-            $table->string('content');
+            $table->text('content');
             // relation to the chat_sessions table
-            $table->foreignId('chat_session_id')->constrained()->onDelete('cascade');
+            $table->foreignId('chat_session_id')->constrained('chat_sessions')->onDelete('cascade');
         });
     }
 
