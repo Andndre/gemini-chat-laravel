@@ -94,6 +94,12 @@ class ChatController extends Controller
         ]);
     }
 
+    public function chatSessions()
+    {
+        $allChatSessions = ChatSession::all();
+        return response()->json($allChatSessions);
+    }
+
     // Mendapatkan riwayat chat berdasarkan ID sesi chat
     public function getChat($id)
     {
