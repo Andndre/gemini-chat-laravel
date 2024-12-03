@@ -40,10 +40,12 @@ class ChatController extends Controller
     }
 
     // Mendapatkan riwayat briefing berdasarkan deskripsi dan riwayat sebelumnya
-    public function getBriefingHistory($description, $history = []) {
+    public function getBriefingHistory($name, $description, $history = []) {
         $chat = Gemini::chat()->startChat(history: array_merge([
             Content::parse(part: 'Hello'),
             Content::parse(part: 'Halo, saya adalah AI canggih yang dikembangkan oleh Ryan Darmayasa untuk menjawab pertanyaan terkait hal berikut : "' . $description . '". Saya tidak bisa menjawab diluar dari konteks ini', role: Role::MODEL),
+            Content::parse(part: "Saya hanya ingin Anda menjawab pertanyaan tentang " . $name . ". Jika saya bertanya tentang topik lain, abaikan saja."),
+            Content::parse(part: "Saya akan mencoba membantu Anda sebaik mungkin. Mari kita mulai.", role: Role::MODEL),
         ], $history));
 
         return $chat;
@@ -65,7 +67,7 @@ class ChatController extends Controller
         $chatSession = new ChatSession();
         $chatSession->template_chat_id = $templateChat->id;
 
-        $chat = $this->getBriefingHistory($templateChat->description);
+        $chat = $this->getBriefingHistory($templateChat->name, $templateChat->description);
 
         $response = $chat->sendMessage($request->first_message);
 
@@ -135,7 +137,7 @@ class ChatController extends Controller
 
         $chatTemplate = TemplateChat::find($chatSession->template_chat_id);
 
-        $chat = $this->getBriefingHistory($chatTemplate->description, $history);
+        $chat = $this->getBriefingHistory($chatTemplate->name, $chatTemplate->description, $history);
 
         $response = $chat->sendMessage($request->message);
 
