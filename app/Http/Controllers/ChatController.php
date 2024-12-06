@@ -205,8 +205,13 @@ class ChatController extends Controller
             $jsonString = substr($text, $jsonStart, $jsonEnd - $jsonStart);
             $parsedResponse = json_decode($jsonString, true);
 
+            $score = $parsedResponse['score'] ?? 0;
+
+            // scale score to 0-100 (from 0-usermessage count)
+            $score = $score / $userMessages->count() * 100;
+
             return response()->json([
-                'score' => $parsedResponse['score'] ?? 0,
+                'score' => $score,
                 'message' => $parsedResponse['message'] ?? 'Error parsing response',
             ]);
         }
