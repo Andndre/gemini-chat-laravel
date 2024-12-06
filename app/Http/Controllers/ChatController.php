@@ -156,4 +156,64 @@ class ChatController extends Controller
             'response' => $response->text(),
         ]);
     }
+
+    // Mendapatkan skor chat berdasarkan ID sesi chat
+    // Skor chat dihitung berdasarkan seberapa sesuai pertanyaan pengguna dengan topik chat, dan seberapa kritis pertanyaan pengguna (jika sudah dijelaskan dalam deskripsi chat maka skor nya rendah, jika belum dijelaskan maka skor nya tinggi), tapi tetap harus sesuai topik chat
+    // Untuk itu mungkin fungsi briefing nya akan berbeda
+    // Harapan dari output nya adalah dalam format json:
+    /**
+     {
+        "score": 0.8,
+        "message": "Pertanyaan Anda sangat sesuai dengan topik chat, namun sudah dijelaskan dalam deskripsi chat. Skor Anda adalah 0.8"
+    }
+     */
+
+    public function chatScore($id) {
+        $chatSession = ChatSession::find($id);
+
+        if (!$chatSession) {
+            return response()->json(['message' => 'Chat session not found'], 404);
+        }
+
+        $chatItems = $chatSession->chatItems()->get();
+
+        $userMessages = $chatItems->filter(function ($item) {
+            return $item->role === 'user';
+        });
+
+        $chatTemplate = TemplateChat::find($chatSession->template_chat_id);
+
+        $score = 0;
+        $message = '';
+
+        if ($userMessages->count() === 0) {
+            $score = 0;
+            $message = 'Anda belum mengirimkan pertanyaan apapun';
+        } else {
+            $userMessagesArray = $userMessages->pluck('content')->toArray();
+            $numberedMessages = array_map(function($message, $index) {
+                return ($index + 1) . '. "' . $message . '"';
+            }, $userMessagesArray, array_keys($userMessagesArray));
+
+            // dd($numberedMessages);
+
+            $response = Gemini::geminiPro()->generateContent("Beri nilai semua pertanyaan ini berdasarkan deskripsi: {$chatTemplate->description} | Pertanyaan: \n" . implode('\n', $numberedMessages) . "\n | Note: - jawab dalam format json: {score: berupa integer, message: pesan anda} \nAturan penilaian: - Input berupa lebih dari satu pertanyaan \n- Nilai semua pertanyaan dan akumulasikan menjadi 1 score total \n- Jika ada pertanyaan yang diluar konteks \n- Ambil pertanyaan yang berkaitan dengan deskripsi chat (tidak harus sama) \n- Score antara 0 sampai 1 untuk 1 pertanyaan, 1 adalah pertanyaan yang masih berkaitan dengan deskripsi chat, 0 adalah pertanyaan yang tidak sesuai dengan deskripsi chat");
+            $text = $response->text();
+
+            $jsonStart = strpos($text, '{');
+            $jsonEnd = strrpos($text, '}') + 1;
+            $jsonString = substr($text, $jsonStart, $jsonEnd - $jsonStart);
+            $parsedResponse = json_decode($jsonString, true);
+
+            return response()->json([
+                'score' => $parsedResponse['score'] ?? 0,
+                'message' => $parsedResponse['message'] ?? 'Error parsing response',
+            ]);
+        }
+
+        return response()->json([
+            'score' => $score,
+            'message' => $message,
+        ]);
+    }
 }

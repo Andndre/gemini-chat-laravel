@@ -26,4 +26,5 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('/chat-sessions', [ChatController::class, 'chatSessions']);
     Route::get('/chat-sessions/{id}/', [ChatController::class, 'getChat']);
     Route::post('/chat-sessions/{id}/send-message', [ChatController::class, 'sendMessage']);
+    Route::get('/chat-sessions/{id}/get-score', [ChatController::class, 'chatScore']);
 });
