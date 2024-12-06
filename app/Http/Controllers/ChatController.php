@@ -197,7 +197,7 @@ class ChatController extends Controller
 
             // dd($numberedMessages);
 
-            $response = Gemini::geminiPro()->generateContent("Beri nilai semua pertanyaan ini berdasarkan deskripsi: {$chatTemplate->description} | Pertanyaan: \n" . implode('\n', $numberedMessages) . "\n | Note: - jawab dalam format json: {score: berupa integer, message: pesan anda} \nAturan penilaian: - Input berupa lebih dari satu pertanyaan \n- Nilai semua pertanyaan dan akumulasikan menjadi 1 score total \n- Jika ada pertanyaan yang diluar konteks \n- Ambil pertanyaan yang berkaitan dengan deskripsi chat (tidak harus sama) \n- Score antara 0 sampai 1 untuk 1 pertanyaan, 1 adalah pertanyaan yang masih berkaitan dengan deskripsi chat, 0 adalah pertanyaan yang tidak sesuai dengan deskripsi chat \n- Berikan message yang informatif supaya user tahu kenapa score nya seperti itu");
+            $response = Gemini::geminiPro()->generateContent("Beri nilai semua pertanyaan ini berdasarkan deskripsi: {$chatTemplate->description} | Pertanyaan: \n" . implode('\n', $numberedMessages) . "\n | Note: - jawab dalam format json: {score: berupa integer, message: pesan anda dalam 1 string} \nAturan penilaian: - Input berupa lebih dari satu pertanyaan \n- Nilai semua pertanyaan dan akumulasikan menjadi 1 score total \n- Jika ada pertanyaan yang diluar konteks \n- Ambil pertanyaan yang berkaitan dengan deskripsi chat (tidak harus sama) \n- Score antara 0 sampai 1 untuk 1 pertanyaan, 1 adalah pertanyaan yang masih berkaitan dengan deskripsi chat, 0 adalah pertanyaan yang tidak sesuai dengan deskripsi chat \n- Berikan message yang informatif supaya user tahu kenapa score nya seperti itu");
             $text = $response->text();
 
             $jsonStart = strpos($text, '{');
