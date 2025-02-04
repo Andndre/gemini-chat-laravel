@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\PenilaianControllerTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,3 +30,10 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('/chat-sessions/{id}/send-message', [ChatController::class, 'sendMessage']);
     Route::get('/chat-sessions/{id}/get-score', [ChatController::class, 'chatScore']);
 });
+
+Route::group(['prefix' => 'auth', 'middleware' => 'guest'], function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+});
+
+Route::get('/penilaian-diskusi', [PenilaianControllerTest::class, 'nilaiDiskusi']);
