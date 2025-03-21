@@ -50,8 +50,8 @@ class GeminiChat
 
         $responseData = $response->json();
 
-        if (isset($responseData['contents'])) {
-            $this->history[] = $responseData['contents'][0];
+        if (isset($responseData['candidates'])) {
+            $this->history[] = $responseData['candidates'][0]['content'];
         }
 
         return $responseData;

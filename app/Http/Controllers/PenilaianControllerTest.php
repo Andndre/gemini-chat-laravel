@@ -39,8 +39,8 @@ class PenilaianControllerTest extends Controller
             ],
             [
             'nama' => 'Orisinalitas Pertanyaan',
-            'penilaian' => 'Skor 1: Pertanyaan sudah pernah diajukan sebelumnya tanpa variasi atau pengembangan baru (sama persis).
-            Skor 2: Pertanyaan kurang orisinal, hanya memodifikasi pertanyaan yang sudah ada (sama persis, hanya diparafrase saja).
+            'penilaian' => 'Skor 1: Pertanyaan identik dengan pertanyaan yang sudah diajukan sebelumnya, tanpa ada perubahan signifikan dalam susunan kata, contoh kasus, atau fokus pertanyaan.
+            Skor 2: Pertanyaan kurang orisinal, hanya memodifikasi susunan pertanyaan yang sudah ada dengan makna yang sama.
             Skor 3: Ada hal baru yang ditanyakan.
             Skor 4: Pertanyaan unik dan belum pernah ditanyakan sebelumnya.',
             ],
@@ -69,7 +69,7 @@ class PenilaianControllerTest extends Controller
 
         // Pertanyaan yang relevan dengan materi
         $diskusi = [
-            'pertanyaan' => 'Apakah hukum newton mempunyai kesaman dengn hukum kekuatan lainnya?',
+            'pertanyaan' => 'Apakah hukum Newton mempunyai persamaan dengan hukum kekuatan yang lain?',
         ];
 
         $promt = [
@@ -79,31 +79,48 @@ class PenilaianControllerTest extends Controller
             ],
             [
                 'role' => 'model',
-                'parts' => [['text' => 'Baik, saya akan memulai.Berikan saya data nama_materi, ringkasan_ebook, pertanyaan_sebelumnya, kriteria_penilaian_pertanyaan, dan diskusi yang relevan dengan materi tersebut. Saya akan merespons dalam format JSON']],
+                'parts' => [['text' => 'Baik, apa judul materi nya?']],
+            ],
+            [
+                'role' => 'user',
+                'parts' => [['text' => 'Judul materi nya adalah ' . $nama_materi]],
+            ],
+            [
+                'role' => 'model',
+                'parts' => [['text' => 'Baik, tolong berikan ringkasan materi tersebut.']],
+            ],
+            [
+                'role' => 'user',
+                'parts' => [['text' => $ringkasan_ebook_str]],
+            ],
+            [
+                'role' => 'model',
+                'parts' => [['text' => 'Baik, berikan beberapa pertanyaan yang sudah pernah diajukan sebelumnya.']],
+            ],
+            [
+                'role' => 'user',
+                'parts' => [['text' => $pertanyaan_sebelumnya_str]],
+            ],
+            [
+                'role' => 'model',
+                'parts' => [['text' => 'Baik, saya akan mengigat pertanyaan tersebut untuk menilai pertanyaan yang akan Anda berikan. Sekarang berikan saya kriteria penilaian pertanyaannya terlebih dahulu.']],
+            ],
+            [
+                'role' => 'user',
+                'parts' => [['text' => $kriteria_penilaian_str]],
+            ],
+            [
+                'role' => 'model',
+                'parts' => [['text' => 'Baik, sekarang kita akan menilai pertanyaan berikut. Tolong berikan pertanyaan yang ingin dinilai.']],
             ],
         ];
 
-        $geminiAPI = new GeminiAPI('gemini-2.0-flash');
+        $geminiAPI = new GeminiAPI('gemini-2.0-pro-exp-02-05');
         $chat = $geminiAPI->startChat($promt);
 
-        // Replace \n with actual new lines in the final prompt
-        $promt = <<<PROMPT
-Perhatikan konteks berikut:
-Nama materi: "{$nama_materi}"
-
-Ringkasan materi: "{$ringkasan_ebook_str}"
-
-Pertanyaan yang sudah pernah ditanyakan sebelumnya (digunakan untuk menilai orisinalitas):
-{$pertanyaan_sebelumnya_str}
-
-Kriteria penilaian pertanyaan:
-{$kriteria_penilaian_str}
-
-Ini pertanyaan yang harus kamu nilai:
-"{$diskusi['pertanyaan']}", dengan memerhatikan kriteria penilaian pertanyaan.
-PROMPT;
-
         // dd($promt);
+
+        $promt = $diskusi['pertanyaan'];
 
         $response = $chat->chat(
             $promt,
@@ -131,6 +148,10 @@ PROMPT;
                 'required' => ['pertanyaan'],
             ]
         );
+
+        // $response = $chat->chat("Jelaskan alasan penilaiannya");
+
+        // dd($response);
 
         // Extract JSON response from the chat response
         $text = $response['candidates'][0]['content']['parts'][0]['text'];
