@@ -20,19 +20,19 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
 
         $user = new User([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password)
+            'password' => bcrypt($request->password),
         ]);
 
         $user->save();
 
         return response()->json([
-            'message' => 'Successfully created user!'
+            'message' => 'Successfully created user!',
         ], 201);
     }
 
@@ -41,21 +41,21 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|string|email',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
-        
-        if (!Auth::attempt($request->only('email', 'password'))) {
+
+        if (! Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'Invalid login credentials'
+                'message' => 'Invalid login credentials',
             ], 401);
         }
 
         $user = $request->user();
         $token = $user->createToken('authToken')->plainTextToken;
-    
+
         return response()->json([
             'message' => 'Successfully logged in!',
-            'token' => $token
+            'token' => $token,
         ]);
     }
 
@@ -65,7 +65,7 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
 
         return response()->json([
-            'message' => 'Successfully logged out!'
+            'message' => 'Successfully logged out!',
         ]);
     }
 
@@ -74,7 +74,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required',
             'password' => 'nullable|min:8',
-            'password_confirmation' => 'nullable|same:password'
+            'password_confirmation' => 'nullable|same:password',
         ]);
 
         $authUser = $request->user();
@@ -88,7 +88,7 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'message' => 'Successfully updated profile!'
+            'message' => 'Successfully updated profile!',
         ]);
     }
 }

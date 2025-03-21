@@ -11,12 +11,13 @@ use Illuminate\Http\Request;
 class EbookController extends Controller
 {
     // ringkas AI
-    public function ringkas(Request $request) {
+    public function ringkas(Request $request)
+    {
         $pdf = $request->file('pdf');
 
-        if (!$pdf) {
+        if (! $pdf) {
             return response()->json([
-                'message' => 'PDF tidak ditemukan'
+                'message' => 'PDF tidak ditemukan',
             ], 400);
         }
 
@@ -26,20 +27,21 @@ class EbookController extends Controller
             new Blob(
                 mimeType: MimeType::APPLICATION_PDF,
                 data: $pdf
-            )
+            ),
         ]);
 
         // return ringkas
         return response()->json([
-            'data' => $ringkas
+            'data' => $ringkas,
         ]);
     }
 
     // upload ebook
-    public function upload(Request $request, int $materi_id) {
+    public function upload(Request $request, int $materi_id)
+    {
         $request->validate([
             'file' => 'required|mimetypes:application/pdf',
-            'ringkasan' => 'required|string'
+            'ringkasan' => 'required|string',
         ]);
 
         $authUser = $request->user();
@@ -52,11 +54,11 @@ class EbookController extends Controller
         $ebook = $user->ebooks()->create([
             'file' => $pdf_path,
             'ringkasan' => $ringkasan,
-            'materi_id' => $materi_id
+            'materi_id' => $materi_id,
         ]);
 
         return response()->json([
-            'data' => $ebook
+            'data' => $ebook,
         ], 200);
     }
 }
